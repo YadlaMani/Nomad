@@ -18,6 +18,7 @@ import GradualSpacing from "@/components/ui/gradual-spacing";
 import BlurIn from "@/components/ui/blur-in";
 import RetroGrid from "@/components/ui/retro-grid";
 import ShimmerButton from "@/components/ui/shimmer-button";
+import { ToastContainer, toast } from "react-toastify"; // Import ToastContainer and toast
 
 export default function Home() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function Home() {
   const [filename, setFilename] = useState("");
   const [password, setPassword] = useState("");
   const [fileData, setFileData] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   function handleDropText() {
     router.push("/drop");
@@ -36,14 +38,18 @@ export default function Home() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    setIsLoading(true);
     const res = await fetchFileInfo(filename, password);
 
     if (res.success) {
       localStorage.setItem("fileData", res.text);
       router.push("/view");
+      toast.success("File retrieved successfully!");
     } else {
       console.log(res.message);
+      toast.error("Failed to retrieve file. Please check your credentials.");
     }
+    setIsLoading(false);
   }
 
   function handleReset() {
@@ -126,7 +132,7 @@ export default function Home() {
             </div>
             <DialogFooter className="sm:justify-start gap-2">
               <Button type="submit" className="w-full sm:w-auto">
-                Retrieve
+                {isLoading ? "Retrieving..." : "Retrieve"}
               </Button>
               <Button
                 type="button"
