@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import { AutosizeTextarea } from "@/components/ui/resizeTextArea";
 import { Button } from "@/components/ui/button";
-
 import {
   Dialog,
   DialogContent,
@@ -16,6 +15,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { addTextFile } from "@/actions";
 import { useRouter } from "next/navigation";
+import RetroGrid from "@/components/ui/retro-grid";
+import { toast } from "react-toastify"; // Import toast from react-toastify
 
 const Page = () => {
   const router = useRouter();
@@ -30,6 +31,7 @@ const Page = () => {
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
   async function handleSave() {
+    toast("Saving text..."); // Show toast when the button is clicked
     let hasError = false;
 
     // Clear previous errors
@@ -40,62 +42,60 @@ const Page = () => {
     // Input validation for text name
     if (/\s/.test(textName)) {
       setTextNameError("Text name should not contain spaces.");
+      toast.error("Text name should not contain spaces."); // Show error toast
       hasError = true;
     }
 
     // Input validation for password
     if (password.length < 1) {
       setPasswordError("Password must be at least 1 character long.");
+      toast.error("Password must be at least 1 character long."); // Show error toast
       hasError = true;
     }
 
     // Check if passwords match
     if (password !== confirmPassword) {
       setConfirmPasswordError("Passwords do not match.");
+      toast.error("Passwords do not match."); // Show error toast
       hasError = true;
     }
 
     if (hasError) return;
-    else {
-      console.log("Hello");
-      const res = await addTextFile(text, textName, password);
-      if (res.success) {
-        console.log("Text saved sucessfuly");
-        router.push("/");
-      } else {
-        console.log(res.message);
-      }
+
+    // Handle saving text
+    const res = await addTextFile(text, textName, password);
+    if (res.success) {
+      toast.success("Text saved successfully!"); // Show success toast
+      router.push("/"); // Redirect to the homepage
+    } else {
+      toast.error(res.message); // Show error toast if saving fails
     }
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen p-4 bg-gray-50">
-      <h1 className="mb-4 text-2xl font-bold text-gray-800">
+    <div className="flex flex-col items-center justify-start h-full p-6 bg-gray-50 w-full max-w-4xl mx-auto">
+      <h1 className="mb-6 text-3xl font-extrabold text-gray-800">
         Drop the text here
       </h1>
-      <div className="w-3/4 mb-4">
-        <AutosizeTextarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Paste the text you wanna store"
-          className="w-full min-h-[150px] border border-gray-300 p-3 text-base rounded-md shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 resize-none"
-        />
-      </div>
+
+      {/* Save Text Button placed at the top */}
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant="outline" className="mb-4">
+          <Button variant="outline" className="mb-6 w-full sm:w-auto">
             Save Text
           </Button>
         </DialogTrigger>
+
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Save Text</DialogTitle>
             <DialogDescription>
-              Saving your text, which can be retrieved later. Ensure the text
-              name has no spaces and the password is at least 1 character long.
+              Save your text here to retrieve later. Ensure the text name has no
+              spaces and the password is at least 1 character long.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            {/* Input fields */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
                 Text Name
@@ -177,6 +177,17 @@ const Page = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Text Area takes remaining space */}
+      <div className="flex-grow w-full mb-6">
+        <AutosizeTextarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Paste the text you want to store"
+          className="w-full min-h-[150px] border border-gray-300 p-3 text-base rounded-md shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 resize-none"
+        />
+      </div>
+      <RetroGrid />
     </div>
   );
 };
